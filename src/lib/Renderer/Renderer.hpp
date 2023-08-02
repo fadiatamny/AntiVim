@@ -16,8 +16,8 @@ public:
     void dispose();
 
     
-    void renderChar(const char c, Vec2f pos, Uint32 color = 0xff, float scale = 1.f);
-    void renderText(const char *text, Vec2f pos, Uint32 color = 0xff, float scale = 1.f);
+    void renderChar(const char c, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
+    void renderText(const char *text, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
 
 private:
     SDL_Window *window;

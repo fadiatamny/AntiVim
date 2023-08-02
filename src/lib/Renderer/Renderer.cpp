@@ -80,6 +80,7 @@ void Renderer::renderChar(const char c, Vec2f pos, Uint32 color, float scale)
         .h = (int)floorf(FontManager::charHeight * scale)};
 
     SDLCheckCode(SDL_SetTextureColorMod(this->fontTexture, color >> 16, color >> 8, color >> 0));
+    SDLCheckCode(SDL_SetTextureAlphaMod(this->fontTexture, color >> 24));
     SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontTexture, &srcRect, &dstRect)); });
 }
 
