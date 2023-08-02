@@ -4,7 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../utils/stb_image.h"
 
-SDL_Surface * FontManager::loadSurface()
+void FontManager::loadTexture(SDL_Renderer *renderer)
 {
     int width, height, channels;
     unsigned char *data = stbi_load(FontManager::filePath, &width, &height, &channels, 0);
@@ -22,5 +22,25 @@ SDL_Surface * FontManager::loadSurface()
         width * channels,
         SDL_PIXELFORMAT_RGB24));
 
-    return surface;
+    SDLCheckPtr(this->texture = SDL_CreateTextureFromSurface(renderer, surface));
+    SDL_FreeSurface(surface);
+
+    for (size_t ascii = ASCIILow; ascii <= ASCIIHigh ; ++ascii)
+    {
+        const size_t index = ascii - 32;
+        const size_t col = index % FontManager::cols;
+        const size_t row = index / FontManager::cols;
+
+        SDL_Rect rect = {
+            .x = (int)col * FontManager::charWidth,
+            .y = (int)row * FontManager::charHeight,
+            .w = FontManager::charWidth,
+            .h = FontManager::charHeight};
+        this->glyphs[index] = rect;
+    }
+}
+
+FontManager::~FontManager()
+{
+    SDL_DestroyTexture(this->texture);
 }

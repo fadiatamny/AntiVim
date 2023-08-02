@@ -17,13 +17,12 @@ int main(int argc, char *argv[])
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         renderer.renderText("Test Text", { 10, 10 });
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        renderer.renderText("Test Text 2", { 10, 10 }, 0xffffff, 5.f);
+        renderer.renderText("Test Text 2", { 10, 10 }, 0xFF000066, 5.f);
     });
 
     
     thread1.join();
     thread2.join();
 
-    renderer.dispose();
     return 0;
 }

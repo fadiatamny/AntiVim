@@ -9,21 +9,18 @@ class Renderer
 {
 public:
     Renderer() {}
-    ~Renderer() {}
+    ~Renderer();
 
     void init(int windowWidth, int windowHeight, const char *title = "Window");
     void run();
-    void dispose();
-
     
-    void renderChar(const char c, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
+    void renderChar(const char c, Vec2f pos, float scale = 1.f);
     void renderText(const char *text, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
 
 private:
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_Surface *fontSurface;
-    SDL_Texture *fontTexture;
+    FontManager fontManager;
     ExecutionQueue executionQueue;
 };
 

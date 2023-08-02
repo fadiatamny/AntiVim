@@ -12,8 +12,7 @@ void Renderer::init(int windowWidth, int windowHeight, const char *title)
                     windowHeight,
                     SDL_WINDOW_SHOWN));
     SDLCheckPtr(this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED));
-    SDLCheckPtr(this->fontSurface = FontManager::loadSurface());
-    SDLCheckPtr(this->fontTexture = SDL_CreateTextureFromSurface(this->renderer, this->fontSurface));
+    this->fontManager.loadTexture(this->renderer);
 }
 
 void Renderer::run()
@@ -41,7 +40,6 @@ void Renderer::run()
         if (this->executionQueue.hasActions())
         {
             SDLCheckCode(SDL_RenderClear(renderer));
-            std::cout << "Rendering" << this->executionQueue.hasActions() << std::endl;
             this->executionQueue.execute();
             SDLCheckCode(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
 
@@ -50,46 +48,37 @@ void Renderer::run()
     }
 }
 
-void Renderer::dispose()
+Renderer::~Renderer()
 {
-    SDL_DestroyTexture(this->fontTexture);
-    SDL_FreeSurface(this->fontSurface);
     SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
     SDL_Quit();
 }
 
-void Renderer::renderChar(const char c, Vec2f pos, Uint32 color, float scale)
+void Renderer::renderChar(const char c, Vec2f pos, float scale)
 {
-    this->executionQueue.push([this, c, pos, color, scale]()
+    this->executionQueue.push([this, c, pos, scale]()
                               {
     const size_t index = c - 32;
-    const size_t col = index % FontManager::cols;
-    const size_t row = index / FontManager::cols;
 
-    SDL_Rect srcRect = {
-        .x = (int)col * FontManager::charWidth,
-        .y = (int)row * FontManager::charHeight,
-        .w = FontManager::charWidth,
-        .h = FontManager::charHeight};
-
-    SDL_Rect dstRect = {
+    SDL_Rect dst = {
         .x = (int)floorf(pos.x),
         .y = (int)floorf(pos.y),
         .w = (int)floorf(FontManager::charWidth * scale),
         .h = (int)floorf(FontManager::charHeight * scale)};
 
-    SDLCheckCode(SDL_SetTextureColorMod(this->fontTexture, color >> 16, color >> 8, color >> 0));
-    SDLCheckCode(SDL_SetTextureAlphaMod(this->fontTexture, color >> 24));
-    SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontTexture, &srcRect, &dstRect)); });
+    SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontManager.texture, &this->fontManager.glyphs[index], &dst)); });
 }
 
 void Renderer::renderText(const char *text, Vec2f pos, Uint32 color, float scale)
 {
+    SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff));
+    SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, (color >> 24) & 0xff));
+
     Vec2f pen = pos;
     for (size_t i = 0; i < strlen(text); i++)
     {
-        this->renderChar(text[i], pen, color, scale);
+        this->renderChar(text[i], pen, scale);
         pen.x += FontManager::charWidth * scale;
     }
 }
