@@ -5,6 +5,9 @@
 class FontManager
 {
 public:
+    static const unsigned short ASCIILow = 32;
+    static const unsigned short ASCIIHigh = 126;
+
     static const int width = 128;
     static const int height = 64;
     static const int cols = 18;
@@ -13,8 +16,6 @@ public:
     static const int charHeight = (height / rows);
 
 private:
-    static const unsigned short ASCIILow = 32;
-    static const unsigned short ASCIIHigh = 126;
     static inline const char *filePath = "assets/font.png";
 
 public:
