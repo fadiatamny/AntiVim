@@ -7,20 +7,41 @@
 void FontManager::loadTexture(SDL_Renderer *renderer)
 {
     int width, height, channels;
-    unsigned char *data = stbi_load(FontManager::filePath, &width, &height, &channels, 0);
+    unsigned char *data = stbi_load(FontManager::filePath, &width, &height, &channels, STBI_rgb_alpha);
     if (data == nullptr)
     {
         std::cout << "Error loading image: " << filePath << " - " << stbi_failure_reason() << std::endl;
         exit(1);
     }
 
-    SDL_Surface *surface = (SDL_Surface *)SDLCheckPtr(SDL_CreateRGBSurfaceWithFormatFrom(
-        data,
+    const int depth = 32;
+    const int pitch = width * 4;
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        const uint32_t rmask = 0xff000000;
+        const uint32_t gmask = 0x00ff0000;
+        const uint32_t bmask = 0x0000ff00;
+        const uint32_t amask = 0x000000ff;
+    #else
+        const uint32_t rmask = 0x000000ff;
+        const uint32_t gmask = 0x0000ff00;
+        const uint32_t bmask = 0x00ff0000;
+        const uint32_t amask = 0xff000000;
+    #endif
+
+    SDL_Surface *surface = (SDL_Surface *)SDLCheckPtr(SDL_CreateRGBSurfaceFrom(
+        (void*)data,
         width,
         height,
-        8 * channels,
-        width * channels,
-        SDL_PIXELFORMAT_RGB24));
+        depth,
+        pitch,
+        rmask,
+        gmask,
+        bmask,
+        amask
+    ));
+
+    SDLCheckCode(SDL_SetColorKey(surface, SDL_TRUE, 0xff000000));
 
     SDLCheckPtr(this->texture = SDL_CreateTextureFromSurface(renderer, surface));
     SDL_FreeSurface(surface);

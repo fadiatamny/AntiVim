@@ -2,6 +2,18 @@
 #define FONTMANAGER_HPP
 #include "../../utils/SDLHelpers.hpp"
 
+#define UNHEX(color) \
+    ((color) >> (8* 0)) & 0xFF, \
+    ((color) >> (8* 1)) & 0xFF, \
+    ((color) >> (8* 2)) & 0xFF, \
+    ((color) >> (8* 3)) & 0xFF
+#define UNHEX_RGB(color) \
+    (color >> 0) & 0xff, \
+    (color >> 8) & 0xff, \
+    (color >> 16) & 0xff
+#define UNHEX_A(color) \
+    (color >> 24) & 0xff
+    
 class FontManager
 {
 public:
