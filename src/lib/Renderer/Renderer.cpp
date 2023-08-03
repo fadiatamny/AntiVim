@@ -100,12 +100,12 @@ void Renderer::renderBuffer(Vec2f pos, Uint32 color, float scale)
 
 void Renderer::renderCursor(Uint32 color)
 {
-    Vec2f cursorPos(FontManager::charWidth * this->fontManager.scale * this->cursor, 0.f);
+    Vec2f pos(FontManager::charWidth * this->fontManager.scale * this->cursor, 0.f);
     SDL_Rect rect{
-        .x = (int)floorf(cursorPos.x),
-        .y = (int)floorf(cursorPos.y),
-        .w = FontManager::charWidth * this->fontManager.scale,
-        .h = FontManager::charHeight * this->fontManager.scale};
+        .x = (int)floorf(pos.x),
+        .y = (int)floorf(pos.y),
+        .w = (int)floorf(FontManager::charWidth * this->fontManager.scale),
+        .h = (int)floorf(FontManager::charHeight * this->fontManager.scale)};
 
     SDLCheckCode(SDL_SetRenderDrawColor(this->renderer, UNHEX(color)));
     SDLCheckCode(SDL_RenderFillRect(this->renderer, &rect));
@@ -113,7 +113,7 @@ void Renderer::renderCursor(Uint32 color)
     if (this->cursor < this->buffer.length())
     {
         this->setTextureColor(0xff000000);
-        this->renderChar(this->buffer[this->cursor], cursorPos, this->fontManager.scale);
+        this->renderChar(this->buffer[this->cursor], pos, this->fontManager.scale);
     }
 }
 
