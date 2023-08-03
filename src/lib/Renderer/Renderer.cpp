@@ -13,29 +13,14 @@ void Renderer::init(int windowWidth, int windowHeight, const char *title)
                     SDL_WINDOW_SHOWN));
     SDLCheckPtr(this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED));
     this->fontManager.loadTexture(this->renderer);
+    this->running = true;
 }
 
 void Renderer::run()
 {
-    bool running = true;
-    while (running)
+    while (this->running)
     {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-                running = false;
-                break;
-            case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                {
-                    running = false;
-                }
-                break;
-            }
-        }
+        this->pollEvents();
 
         if (this->executionQueue.hasActions())
         {
@@ -50,6 +35,7 @@ void Renderer::run()
 
 Renderer::~Renderer()
 {
+    this->running = false;
     SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
     SDL_Quit();
@@ -70,15 +56,57 @@ void Renderer::renderChar(const char c, Vec2f pos, float scale)
     SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontManager.texture, &this->fontManager.glyphs[index], &dst)); });
 }
 
-void Renderer::renderText(const char *text, Vec2f pos, Uint32 color, float scale)
+void Renderer::renderTextChunk(const char *text, size_t len, Vec2f pos, Uint32 color, float scale)
 {
     SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff));
     SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, (color >> 24) & 0xff));
 
     Vec2f pen = pos;
-    for (size_t i = 0; i < strlen(text); i++)
+    for (size_t i = 0; i < len; i++)
     {
         this->renderChar(text[i], pen, scale);
         pen.x += FontManager::charWidth * scale;
+    }
+}
+
+void Renderer::renderText(const char *text, Vec2f pos, Uint32 color, float scale)
+{
+    this->renderTextChunk(text, strlen(text), pos, color, scale);
+}
+
+void Renderer::pollEvents()
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            this->running = false;
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_BACKSPACE:
+                if (this->buffer.length() > 0)
+                {
+                    this->buffer.pop_back();
+                    this->renderText(this->buffer.c_str(), Vec2f(0, 0), 0xffffff, this->fontManager.scale);
+                }
+                break;
+            case SDLK_RETURN:
+                if (this->buffer.length() > 0)
+                {
+                    this->buffer += '\n';
+                    this->renderText(this->buffer.c_str(), Vec2f(0, 0), 0xffffff, this->fontManager.scale);
+                }
+                break;
+            }
+            break;
+        case SDL_TEXTINPUT:
+            this->buffer += event.text.text;
+            this->renderText(this->buffer.c_str(), Vec2f(0, 0), 0xffffff, this->fontManager.scale);
+            break;
+        }
     }
 }

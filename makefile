@@ -3,7 +3,7 @@
 
 # Compiler settings
 CXX := g++
-CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -ggdb
+CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -ggdb -g
 
 # SDL2 library and include directories using pkg-config
 SDL2_LIB := $(shell sdl2-config --libs)
@@ -22,7 +22,7 @@ OBJECTS := $(patsubst %.cpp, %.o, $(SOURCES))
 EXECUTABLE := AntiVim.app
 
 # Makefile targets
-.PHONY: all clean
+.PHONY: clean all
 
 all: $(EXECUTABLE)
 
@@ -37,3 +37,10 @@ clean:
 
 run: $(EXECUTABLE)
 	./$(EXECUTABLE)
+
+
+dev: clean $(EXECUTABLE)
+	./$(EXECUTABLE)
+
+debug: $(EXECUTABLE)
+	gdb $(EXECUTABLE)

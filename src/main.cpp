@@ -5,11 +5,7 @@
 
 const char *title = "AntiVim";
 
-int main(int argc, char *argv[])
-{
-    Renderer renderer;
-    renderer.init(800, 600, title);
-
+void runThreadsApproach(Renderer &renderer) {
     std::thread thread1([&renderer]()
                         { renderer.run(); });
 
@@ -23,6 +19,19 @@ int main(int argc, char *argv[])
     
     thread1.join();
     thread2.join();
+}
+
+void runSingleThreadApproach(Renderer &renderer) {
+    renderer.run();
+}
+
+int main(int argc, char *argv[])
+{
+    Renderer renderer;
+    renderer.init(800, 600, title);
+
+    runSingleThreadApproach(renderer);
+    // runThreadsApproach(renderer);
 
     return 0;
 }

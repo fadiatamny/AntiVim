@@ -19,12 +19,14 @@ private:
     static inline const char *filePath = "assets/font.png";
 
 public:
+    FontManager() {}
     ~FontManager();
     void loadTexture(SDL_Renderer *renderer);
 
 public:
     SDL_Rect glyphs[ASCIIHigh - ASCIILow + 1] = {0};
     SDL_Texture *texture = nullptr;
+    float scale = 5.f;
 };
 
 #endif // FONTMANAGER_HPP

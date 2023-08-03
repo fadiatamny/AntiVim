@@ -25,9 +25,14 @@ void FontManager::loadTexture(SDL_Renderer *renderer)
     SDLCheckPtr(this->texture = SDL_CreateTextureFromSurface(renderer, surface));
     SDL_FreeSurface(surface);
 
-    for (size_t ascii = ASCIILow; ascii <= ASCIIHigh ; ++ascii)
+    for (size_t ascii = ASCIILow; ascii <= ASCIIHigh; ++ascii)
     {
         const size_t index = ascii - 32;
+        if ( index >= ASCIIHigh - ASCIILow + 1) {
+            std::cout << "index out of bounds: " << index << std::endl;
+            exit(1);
+        }
+
         const size_t col = index % FontManager::cols;
         const size_t row = index / FontManager::cols;
 
