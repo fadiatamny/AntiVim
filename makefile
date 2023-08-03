@@ -38,9 +38,13 @@ clean:
 run: $(EXECUTABLE)
 	./$(EXECUTABLE)
 
+build: $(EXECUTABLE)
+
+rebuild: clean $(EXECUTABLE)
 
 dev: clean $(EXECUTABLE)
 	./$(EXECUTABLE)
 
 debug: $(EXECUTABLE)
 	gdb $(EXECUTABLE)
+
