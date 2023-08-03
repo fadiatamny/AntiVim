@@ -52,7 +52,12 @@ void Renderer::renderChar(const char c, Vec2f pos, float scale)
 {
     // this->executionQueue.push([this, c, pos, scale]()
     //                           {
-    const size_t index = c - 32;
+
+    size_t index = '?' - FontManager::ASCIILow;
+    if (FontManager::ASCIILow <= c && c <= FontManager::ASCIIHigh)
+    {
+        index = c - FontManager::ASCIILow;
+    }
 
     SDL_Rect dst = {
         .x = (int)floorf(pos.x),
@@ -132,8 +137,28 @@ void Renderer::pollEvents()
             case SDLK_BACKSPACE:
                 if (this->buffer.length() > 0)
                 {
-                    this->buffer.pop_back();
-                    --this->cursor;
+                    if (this->cursor > 1)
+                    {
+                        this->buffer.erase(this->cursor - 1, 1);
+                    }
+                    else if (this->cursor == 1)
+                    {
+                        this->buffer.erase(0, 1);
+                    }
+
+                    if (this->cursor > 0)
+                    {
+                        --this->cursor;
+                    }
+                }
+                break;
+            case SDLK_DELETE:
+                if (this->buffer.length() > 0)
+                {
+                    if (this->cursor <= this->buffer.length() - 1)
+                    {
+                        this->buffer.erase(this->cursor, 1);
+                    }
                 }
                 break;
             case SDLK_RETURN:
@@ -185,10 +210,15 @@ void Renderer::pollEvents()
 
         case SDL_TEXTINPUT:
         {
-            this->buffer += event.text.text;
-            this->cursor = this->buffer.length();
+            this->appendText(event.text.text);
         }
         break;
         }
     }
+}
+
+void Renderer::appendText(const char *text)
+{
+    this->buffer.insert(this->cursor, text);
+    this->cursor += strlen(text);
 }

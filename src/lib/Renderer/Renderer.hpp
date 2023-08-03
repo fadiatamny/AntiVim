@@ -25,6 +25,7 @@ protected:
     void pollEvents();
     void handleTextEvent(SDL_TextInputEvent &event);
     void setTextureColor(Uint32 color);
+    void appendText(const char *text);
 
 private:
     bool running;
