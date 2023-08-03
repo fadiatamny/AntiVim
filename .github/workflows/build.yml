@@ -1,0 +1,27 @@
+name: Build
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-linux-g++:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -qq libsdl2-dev libglew-dev
+      - name: build AntiVim
+        run: |
+          make build
+  build-macos:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: brew install sdl2 pkg-config glew
+      - name: build AntiVim
+        run: |
+          make build
