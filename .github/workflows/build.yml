@@ -5,7 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-linux-g++:
+  linux:
+    name: Build Linux G++
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v1
@@ -16,7 +17,8 @@ jobs:
       - name: build AntiVim
         run: |
           make build
-  build-macos:
+  macos:
+    name: Build MacOS
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v1
