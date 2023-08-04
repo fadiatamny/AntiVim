@@ -1,4 +1,5 @@
 #include "Buffer.hpp"
+#include <fstream>
 
 void Buffer::newLine()
 {
@@ -92,6 +93,7 @@ void Buffer::move(Vec2<int> cursor)
 
     this->cursor = cursor;
 }
+
 void Buffer::move(int row, int col)
 {
     if (this->cursor.y + row < 0)
@@ -121,4 +123,42 @@ void Buffer::move(int row, int col)
     {
         this->cursor.x += col;
     }
+}
+
+void Buffer::load(std::string path)
+{
+
+    this->lines.clear();
+    std::ifstream inputFile(path);
+
+    if (!inputFile.is_open())
+    {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(inputFile, line))
+    {
+        this->lines.push_back(line);
+    }
+
+    inputFile.close();
+}
+void Buffer::save(std::string path)
+{
+    std::ofstream outputFile(path);
+
+    if (!outputFile.is_open())
+    {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return;
+    }
+
+    for (const std::string &str : this->lines)
+    {
+        outputFile << str << std::endl;
+    }
+
+    outputFile.close();
 }
