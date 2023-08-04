@@ -4,12 +4,13 @@
 #include "../FontManager/FontManager.hpp"
 #include "../../utils/Vec2f.hpp"
 #include "../../utils/ExecutionQueue.hpp"
+#include "../Buffer/Buffer.hpp"
 #include <string>
 
 class Renderer
 {
 public:
-    Renderer(): fontManager(FontManager()) {}
+    Renderer(): fontManager(FontManager()), buffer(Buffer()) {}
     ~Renderer();
 
     void init(int windowWidth, int windowHeight, const char *title = "Window");
@@ -33,8 +34,7 @@ private:
     SDL_Renderer *renderer;
     FontManager fontManager;
     ExecutionQueue executionQueue;
-    std::string buffer = "";
-    size_t cursor = 0;
+    Buffer buffer;
 };
 
 #endif // RENDERER_HPP

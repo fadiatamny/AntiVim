@@ -82,8 +82,6 @@ void Renderer::renderTextChunk(const char *text, size_t len, Vec2f pos, Uint32 c
 
 void Renderer::setTextureColor(Uint32 color)
 {
-    // SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff));
-    // SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, (color >> 24) & 0xff));
     SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, UNHEX_RGB(color)));
     SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, UNHEX_A(color)));
 }
@@ -95,12 +93,13 @@ void Renderer::renderText(const char *text, Vec2f pos, Uint32 color, float scale
 
 void Renderer::renderBuffer(Vec2f pos, Uint32 color, float scale)
 {
-    this->renderText(this->buffer.c_str(), pos, color, scale);
+    std::cout << "RENDERINGGGG" << std::endl;
+    this->renderText(this->buffer.currLine(), pos, color, scale);
 }
 
 void Renderer::renderCursor(Uint32 color)
 {
-    Vec2f pos(FontManager::charWidth * this->fontManager.scale * this->cursor, 0.f);
+    Vec2f pos(FontManager::charWidth * this->fontManager.scale * this->buffer.cursor.col, 0.f);
     SDL_Rect rect{
         .x = (int)floorf(pos.x),
         .y = (int)floorf(pos.y),
@@ -110,10 +109,10 @@ void Renderer::renderCursor(Uint32 color)
     SDLCheckCode(SDL_SetRenderDrawColor(this->renderer, UNHEX(color)));
     SDLCheckCode(SDL_RenderFillRect(this->renderer, &rect));
 
-    if (this->cursor < this->buffer.length())
+    if (this->buffer.cursor.col < this->buffer.lineEnd())
     {
         this->setTextureColor(0xff000000);
-        this->renderChar(this->buffer[this->cursor], pos, this->fontManager.scale);
+        this->renderChar(this->buffer.currLine()[this->buffer.cursor.col], pos, this->fontManager.scale);
     }
 }
 
@@ -135,55 +134,22 @@ void Renderer::pollEvents()
             {
 #pragma region cursor stuff
             case SDLK_BACKSPACE:
-                if (this->buffer.length() > 0)
-                {
-                    if (this->cursor > 1)
-                    {
-                        this->buffer.erase(this->cursor - 1, 1);
-                    }
-                    else if (this->cursor == 1)
-                    {
-                        this->buffer.erase(0, 1);
-                    }
-
-                    if (this->cursor > 0)
-                    {
-                        --this->cursor;
-                    }
-                }
+                this->buffer.erase();
                 break;
             case SDLK_DELETE:
-                if (this->buffer.length() > 0)
-                {
-                    if (this->cursor <= this->buffer.length() - 1)
-                    {
-                        this->buffer.erase(this->cursor, 1);
-                    }
-                }
-                break;
-            case SDLK_RETURN:
-                if (this->buffer.length() > 0)
-                {
-                    this->buffer += '\n';
-                }
+                this->buffer.del();
                 break;
             case SDLK_LEFT:
-                if (this->cursor > 0)
-                {
-                    --this->cursor;
-                }
+                this->buffer.move(0, -1);
                 break;
             case SDLK_RIGHT:
-                if (this->cursor < this->buffer.length())
-                {
-                    ++this->cursor;
-                }
+                this->buffer.move(0, 1);
                 break;
             case SDLK_HOME:
-                this->cursor = 0;
+                this->buffer.move({.row = this->buffer.cursor.row, .col = this->buffer.lineStart()});
                 break;
             case SDLK_END:
-                this->cursor = this->buffer.length();
+                this->buffer.move({.row = this->buffer.cursor.row, .col = this->buffer.lineEnd()});
                 break;
 
 #pragma endregion
@@ -209,16 +175,8 @@ void Renderer::pollEvents()
         break;
 
         case SDL_TEXTINPUT:
-        {
-            this->appendText(event.text.text);
-        }
-        break;
+            this->buffer.insert(event.text.text);
+            break;
         }
     }
-}
-
-void Renderer::appendText(const char *text)
-{
-    this->buffer.insert(this->cursor, text);
-    this->cursor += strlen(text);
 }
