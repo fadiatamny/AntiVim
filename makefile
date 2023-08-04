@@ -45,6 +45,6 @@ rebuild: clean $(EXECUTABLE)
 dev: clean $(EXECUTABLE)
 	./$(EXECUTABLE)
 
-debug: $(EXECUTABLE)
+debug: clean $(EXECUTABLE)
 	gdb $(EXECUTABLE)
 
