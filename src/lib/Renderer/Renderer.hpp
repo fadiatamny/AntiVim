@@ -2,8 +2,7 @@
 #define RENDERER_HPP
 
 #include "../FontManager/FontManager.hpp"
-#include "../../utils/Vec2f.hpp"
-#include "../../utils/ExecutionQueue.hpp"
+#include "../../utils/Vec2.hpp"
 #include "../Buffer/Buffer.hpp"
 #include <string>
 
@@ -16,10 +15,10 @@ public:
     void init(int windowWidth, int windowHeight, const char *title = "Window");
     void run();
     
-    void renderChar(const char c, Vec2f pos, float scale = 1.f);
-    void renderTextChunk(const char *text, size_t len, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
-    void renderText(const char *text, Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
-    void renderBuffer(Vec2f pos, Uint32 color = 0xffffff, float scale = 1.f);
+    void renderChar(const char c, Vec2<float> pos, float scale = 1.f);
+    void renderTextChunk(const char *text, size_t len, Vec2<float> pos, Uint32 color = 0xffffff, float scale = 1.f);
+    void renderText(const char *text, Vec2<float> pos, Uint32 color = 0xffffff, float scale = 1.f);
+    void renderBuffer(Uint32 color = 0xffffff, float scale = 1.f);
     void renderCursor(Uint32 color = 0xffffff);
 
 protected:
@@ -33,7 +32,6 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
     FontManager fontManager;
-    ExecutionQueue executionQueue;
     Buffer buffer;
 };
 

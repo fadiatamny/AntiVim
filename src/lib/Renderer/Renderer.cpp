@@ -21,19 +21,9 @@ void Renderer::run()
     while (this->running)
     {
         this->pollEvents();
-
-        // if (this->executionQueue.hasActions())
-        // {
-        //     SDLCheckCode(SDL_RenderClear(renderer));
-        //     this->executionQueue.execute();
-        //     SDLCheckCode(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
-
-        //     SDL_RenderPresent(renderer);
-        // }
-
         Uint32 color = 0xffffffff;
         SDLCheckCode(SDL_RenderClear(renderer));
-        this->renderBuffer({0, 0}, color, this->fontManager.scale);
+        this->renderBuffer(color, this->fontManager.scale);
         this->renderCursor(color);
         SDLCheckCode(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
         SDL_RenderPresent(renderer);
@@ -48,11 +38,8 @@ Renderer::~Renderer()
     SDL_Quit();
 }
 
-void Renderer::renderChar(const char c, Vec2f pos, float scale)
+void Renderer::renderChar(const char c, Vec2<float> pos, float scale)
 {
-    // this->executionQueue.push([this, c, pos, scale]()
-    //                           {
-
     size_t index = '?' - FontManager::ASCIILow;
     if (FontManager::ASCIILow <= c && c <= FontManager::ASCIIHigh)
     {
@@ -66,13 +53,12 @@ void Renderer::renderChar(const char c, Vec2f pos, float scale)
         .h = (int)floorf(FontManager::charHeight * scale)};
 
     SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontManager.texture, &this->fontManager.glyphs[index], &dst));
-    //  });
 }
 
-void Renderer::renderTextChunk(const char *text, size_t len, Vec2f pos, Uint32 color, float scale)
+void Renderer::renderTextChunk(const char *text, size_t len, Vec2<float> pos, Uint32 color, float scale)
 {
     this->setTextureColor(color);
-    Vec2f pen = pos;
+    Vec2<float> pen = pos;
     for (size_t i = 0; i < len; i++)
     {
         this->renderChar(text[i], pen, scale);
@@ -86,20 +72,26 @@ void Renderer::setTextureColor(Uint32 color)
     SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, UNHEX_A(color)));
 }
 
-void Renderer::renderText(const char *text, Vec2f pos, Uint32 color, float scale)
+void Renderer::renderText(const char *text, Vec2<float> pos, Uint32 color, float scale)
 {
     this->renderTextChunk(text, strlen(text), pos, color, scale);
 }
 
-void Renderer::renderBuffer(Vec2f pos, Uint32 color, float scale)
+void Renderer::renderBuffer(Uint32 color, float scale)
 {
-    std::cout << "RENDERINGGGG" << std::endl;
-    this->renderText(this->buffer.currLine(), pos, color, scale);
+    Vec2<float> pos{0, 0};
+
+    for(auto it=this->buffer.linesBegin(); it != this->buffer.linesEnd(); ++it)
+    {
+        this->renderText((*it).c_str(), pos, color, scale);
+        pos.y += FontManager::charHeight * scale;
+    }
+
 }
 
 void Renderer::renderCursor(Uint32 color)
 {
-    Vec2f pos(FontManager::charWidth * this->fontManager.scale * this->buffer.cursor.col, 0.f);
+    Vec2<float> pos(FontManager::charWidth * this->fontManager.scale * this->buffer.cursor.x, FontManager::charHeight * this->fontManager.scale * this->buffer.cursor.y);
     SDL_Rect rect{
         .x = (int)floorf(pos.x),
         .y = (int)floorf(pos.y),
@@ -109,16 +101,17 @@ void Renderer::renderCursor(Uint32 color)
     SDLCheckCode(SDL_SetRenderDrawColor(this->renderer, UNHEX(color)));
     SDLCheckCode(SDL_RenderFillRect(this->renderer, &rect));
 
-    if (this->buffer.cursor.col < this->buffer.lineEnd())
+    if (this->buffer.currLine() && this->buffer.lineEnd() &&  this->buffer.cursor.x < this->buffer.lineEnd())
     {
         this->setTextureColor(0xff000000);
-        this->renderChar(this->buffer.currLine()[this->buffer.cursor.col], pos, this->fontManager.scale);
+        this->renderChar(this->buffer.currLine()[(int)this->buffer.cursor.x], pos, this->fontManager.scale);
     }
 }
 
 void Renderer::pollEvents()
 {
     SDL_Event event;
+    Vec2<int> cursor{0, 0};
 
     while (SDL_PollEvent(&event))
     {
@@ -139,17 +132,34 @@ void Renderer::pollEvents()
             case SDLK_DELETE:
                 this->buffer.del();
                 break;
+            case SDLK_RETURN:
+                this->buffer.newLine();
+                break;
             case SDLK_LEFT:
                 this->buffer.move(0, -1);
                 break;
             case SDLK_RIGHT:
                 this->buffer.move(0, 1);
                 break;
+            case SDLK_UP:
+                cursor.x = this->buffer.lineStart();
+                cursor.y = this->buffer.cursor.y - 1;
+                this->buffer.move(cursor);
+                break;
+            case SDLK_DOWN:
+                cursor.x = this->buffer.lineEnd();
+                cursor.y = this->buffer.cursor.y - 1;
+                this->buffer.move(cursor);
+                break;
             case SDLK_HOME:
-                this->buffer.move({.row = this->buffer.cursor.row, .col = this->buffer.lineStart()});
+                cursor.x = this->buffer.lineStart();
+                cursor.y = this->buffer.cursor.y;
+                this->buffer.move(cursor);
                 break;
             case SDLK_END:
-                this->buffer.move({.row = this->buffer.cursor.row, .col = this->buffer.lineEnd()});
+                cursor.x = this->buffer.lineEnd();
+                cursor.y = this->buffer.cursor.y;
+                this->buffer.move(cursor);
                 break;
 
 #pragma endregion

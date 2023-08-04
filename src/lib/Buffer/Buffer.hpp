@@ -4,12 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
-typedef struct cursor
-{
-    size_t row;
-    size_t col;
-} Cursor;
+#include "../../utils/Vec2.hpp"
 
 class Buffer
 {
@@ -21,17 +16,22 @@ public:
     }
     ~Buffer() {}
 
+    void newLine();
     void insert(std::string text);
     void erase();
     void del();
 
-    void move(Cursor cursor);
-    void move(size_t row, size_t col);
+    void move(Vec2<int> cursor);
+    void move(int row, int col);
 
 
-    const char* currLine()
+    inline const char* currLine()
     {
-        return this->lines[this->cursor.row].c_str();
+        if (this->cursor.y >= this->lines.size())
+        {
+            return nullptr;
+        }
+        return this->lines[this->cursor.y].c_str();
     }
 
     inline size_t lineStart()
@@ -40,11 +40,25 @@ public:
     }
     inline size_t lineEnd()
     {
-        return this->lines[this->cursor.row].length() - 1;
+        return this->lines[this->cursor.y].length();
     }
 
+    inline std::vector<std::string>::iterator linesBegin() {
+        return this->lines.begin();
+    }
+    inline std::vector<std::string>::iterator linesEnd() {
+        return this->lines.end();
+    }
+
+private:
+    inline int linesCount()
+    {
+        return (int)this->lines.size();
+    }
+
+
 public:
-    Cursor cursor;
+    Vec2<int> cursor;
 
 private:
     std::vector<std::string> lines;
