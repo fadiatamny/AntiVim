@@ -142,13 +142,13 @@ void Renderer::pollEvents()
                 this->buffer.move(0, 1);
                 break;
             case SDLK_UP:
-                cursor.x = this->buffer.lineStart();
+                cursor.x = this->buffer.cursor.x;
                 cursor.y = this->buffer.cursor.y - 1;
                 this->buffer.move(cursor);
                 break;
             case SDLK_DOWN:
-                cursor.x = this->buffer.lineEnd();
-                cursor.y = this->buffer.cursor.y - 1;
+                cursor.x = this->buffer.cursor.x;
+                cursor.y = this->buffer.cursor.y + 1;
                 this->buffer.move(cursor);
                 break;
             case SDLK_HOME:
