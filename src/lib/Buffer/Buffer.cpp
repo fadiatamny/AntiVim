@@ -35,8 +35,10 @@ void Buffer::erase()
     {
         return;
     }
+
     if (this->lines[this->cursor.y].length() <= 0)
     {
+        this->lines.erase(this->lines.begin() + this->cursor.y);
         return;
     }
 
@@ -52,6 +54,14 @@ void Buffer::erase()
     if (this->cursor.x > 0)
     {
         this->cursor.x -= 1;
+    }
+
+    if (this->cursor.x == 0 && this->cursor.y > 0)
+    {
+        this->cursor.x = this->lines[this->cursor.y - 1].length();
+        this->lines[this->cursor.y - 1] += this->lines[this->cursor.y];
+        this->lines.erase(this->lines.begin() + this->cursor.y);
+        this->cursor.y -= 1;
     }
 }
 
@@ -145,6 +155,7 @@ void Buffer::load(std::string path)
 
     inputFile.close();
 }
+
 void Buffer::save(std::string path)
 {
     std::ofstream outputFile(path);
