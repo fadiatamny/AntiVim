@@ -23,36 +23,36 @@ public:
         this->y = 0;
     }
 
-    Vec2 operator+(const Vec2 &other) const
+    inline Vec2 operator+(const Vec2 &other) const
     {
         return Vec2(this->x + other.x, this->y + other.y);
     }
-    Vec2 operator-(const Vec2 &other) const
+    inline Vec2 operator-(const Vec2 &other) const
     {
         return Vec2(this->x - other.x, this->y - other.y);
     }
-    Vec2 operator*(const Vec2 &other) const
+    inline Vec2 operator*(const Vec2 &other) const
     {
         return Vec2(this->x * other.x, this->y * other.y);
     }
-    Vec2 operator/(const Vec2 &other) const
+    inline Vec2 operator/(const Vec2 &other) const
     {
         return Vec2(this->x / other.x, this->y / other.y);
     }
 
-    Vec2 add(const Vec2 &other) const
+    inline Vec2 add(const Vec2 &other) const
     {
         return *this + other;
     }
-    Vec2 sub(const Vec2 &other) const
+    inline Vec2 sub(const Vec2 &other) const
     {
         return *this - other;
     }
-    Vec2 mul(const Vec2 &other) const
+    inline Vec2 mul(const Vec2 &other) const
     {
         return *this * other;
     }
-    Vec2 div(const Vec2 &other) const
+    inline Vec2 div(const Vec2 &other) const
     {
         return *this / other;
     }

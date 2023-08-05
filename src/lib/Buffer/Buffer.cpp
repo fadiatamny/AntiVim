@@ -123,11 +123,21 @@ void Buffer::move(int row, int col)
 
     if (this->cursor.x + col < 0)
     {
-        this->cursor.x = 0;
+        if (this->cursor.y - 1 >= 0 ) {
+            this->cursor.y -= 1;
+            this->cursor.x = this->lines[this->cursor.y].length();
+        } else {
+            this->cursor.x = 0;
+        }
     }
     else if (this->cursor.x + col > this->lines[this->cursor.y].length())
     {
-        this->cursor.x = this->lines[this->cursor.y].length();
+        if (this->cursor.y + 1 < this->linesCount()) {
+            this->cursor.y += 1;
+            this->cursor.x = 0;
+        } else {
+            this->cursor.x = this->lines[this->cursor.y].length();
+        }
     }
     else
     {
