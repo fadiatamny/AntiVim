@@ -6,6 +6,11 @@
 #include "../Buffer/Buffer.hpp"
 #include <string>
 
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+#define FPS 60
+#define DELTA_TIME (1.0f / FPS)
+
 class Renderer
 {
 public:
@@ -42,6 +47,7 @@ private:
     SDL_Renderer *renderer;
     FontManager fontManager;
     Buffer buffer;
+    Vec2<float> cameraPos;
 };
 
 #endif // RENDERER_HPP
