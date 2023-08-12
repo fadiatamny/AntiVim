@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     }
 
     Renderer renderer;
-    renderer.init(800, 600, title);
+    renderer.init(SCREEN_WIDTH, SCREEN_HEIGHT, title);
     if (filename.length()) {
         renderer.loadFile(filename);
     }
