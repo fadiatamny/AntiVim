@@ -36,14 +36,14 @@ clean:
 	$(RM) $(EXECUTABLE) $(OBJECTS)
 
 run: $(EXECUTABLE)
-	./$(EXECUTABLE)
+	./$(EXECUTABLE) $(FILENAME)
 
 build: $(EXECUTABLE)
 
 rebuild: clean $(EXECUTABLE)
 
 dev: clean $(EXECUTABLE)
-	./$(EXECUTABLE)
+	./$(EXECUTABLE)  $(FILENAME)
 
 debug: clean $(EXECUTABLE)
 	gdb $(EXECUTABLE)

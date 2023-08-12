@@ -1,4 +1,5 @@
 #include "Buffer.hpp"
+#include <fstream>
 
 void Buffer::newLine()
 {
@@ -34,8 +35,10 @@ void Buffer::erase()
     {
         return;
     }
+
     if (this->lines[this->cursor.y].length() <= 0)
     {
+        this->lines.erase(this->lines.begin() + this->cursor.y);
         return;
     }
 
@@ -51,6 +54,14 @@ void Buffer::erase()
     if (this->cursor.x > 0)
     {
         this->cursor.x -= 1;
+    }
+
+    if (this->cursor.x == 0 && this->cursor.y > 0)
+    {
+        this->cursor.x = this->lines[this->cursor.y - 1].length();
+        this->lines[this->cursor.y - 1] += this->lines[this->cursor.y];
+        this->lines.erase(this->lines.begin() + this->cursor.y);
+        this->cursor.y -= 1;
     }
 }
 
@@ -92,6 +103,7 @@ void Buffer::move(Vec2<int> cursor)
 
     this->cursor = cursor;
 }
+
 void Buffer::move(int row, int col)
 {
     if (this->cursor.y + row < 0)
@@ -111,14 +123,63 @@ void Buffer::move(int row, int col)
 
     if (this->cursor.x + col < 0)
     {
-        this->cursor.x = 0;
+        if (this->cursor.y - 1 >= 0 ) {
+            this->cursor.y -= 1;
+            this->cursor.x = this->lines[this->cursor.y].length();
+        } else {
+            this->cursor.x = 0;
+        }
     }
     else if (this->cursor.x + col > this->lines[this->cursor.y].length())
     {
-        this->cursor.x = this->lines[this->cursor.y].length();
+        if (this->cursor.y + 1 < this->linesCount()) {
+            this->cursor.y += 1;
+            this->cursor.x = 0;
+        } else {
+            this->cursor.x = this->lines[this->cursor.y].length();
+        }
     }
     else
     {
         this->cursor.x += col;
     }
+}
+
+void Buffer::load(std::string path)
+{
+
+    this->lines.clear();
+    std::ifstream inputFile(path);
+
+    if (!inputFile.is_open())
+    {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(inputFile, line))
+    {
+        this->lines.push_back(line);
+    }
+
+    inputFile.close();
+}
+
+void Buffer::save(std::string path)
+{
+    std::ofstream outputFile(path);
+
+    if (!outputFile.is_open())
+    {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return;
+    }
+
+    for (const std::string &str : this->lines)
+    {
+        outputFile << str << std::endl;
+    }
+
+    outputFile.close();
 }

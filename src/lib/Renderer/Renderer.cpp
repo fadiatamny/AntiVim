@@ -44,6 +44,8 @@ void Renderer::renderChar(const char c, Vec2<float> pos, float scale)
     if (FontManager::ASCIILow <= c && c <= FontManager::ASCIIHigh)
     {
         index = c - FontManager::ASCIILow;
+    } else if ( c == '\r' || c == '\n' ) {
+        return;
     }
 
     SDL_Rect dst = {

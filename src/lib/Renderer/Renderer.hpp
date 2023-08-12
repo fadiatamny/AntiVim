@@ -9,17 +9,26 @@
 class Renderer
 {
 public:
-    Renderer(): fontManager(FontManager()), buffer(Buffer()) {}
+    Renderer() : fontManager(FontManager()), buffer(Buffer()) {}
     ~Renderer();
 
     void init(int windowWidth, int windowHeight, const char *title = "Window");
     void run();
-    
+
     void renderChar(const char c, Vec2<float> pos, float scale = 1.f);
     void renderTextChunk(const char *text, size_t len, Vec2<float> pos, Uint32 color = 0xffffff, float scale = 1.f);
     void renderText(const char *text, Vec2<float> pos, Uint32 color = 0xffffff, float scale = 1.f);
     void renderBuffer(Uint32 color = 0xffffff, float scale = 1.f);
     void renderCursor(Uint32 color = 0xffffff);
+
+    inline void loadFile(std::string path)
+    {
+        this->buffer.load(path);
+    }
+    inline void saveFile(std::string path)
+    {
+        this->buffer.save(path);
+    }
 
 protected:
     void pollEvents();

@@ -25,6 +25,10 @@ public:
     void move(int row, int col);
 
 
+    void load(std::string path);
+    void save(std::string path);
+
+
     inline const char* currLine()
     {
         if (this->cursor.y >= this->lines.size())
