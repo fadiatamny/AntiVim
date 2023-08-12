@@ -29,7 +29,7 @@ void FontManager::loadTexture(SDL_Renderer *renderer)
         const uint32_t amask = 0xff000000;
     #endif
 
-    SDL_Surface *surface = (SDL_Surface *)SDLCheckPtr(SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = (SDL_Surface *)SDLHelpers::SDLCheckPtr(SDL_CreateRGBSurfaceFrom(
         (void*)data,
         width,
         height,
@@ -41,9 +41,9 @@ void FontManager::loadTexture(SDL_Renderer *renderer)
         amask
     ));
 
-    SDLCheckCode(SDL_SetColorKey(surface, SDL_TRUE, 0xff000000));
+    SDLHelpers::SDLCheckCode(SDL_SetColorKey(surface, SDL_TRUE, 0xff000000));
 
-    SDLCheckPtr(this->texture = SDL_CreateTextureFromSurface(renderer, surface));
+    SDLHelpers::SDLCheckPtr(this->texture = SDL_CreateTextureFromSurface(renderer, surface));
     SDL_FreeSurface(surface);
 
     for (size_t ascii = ASCIILow; ascii <= ASCIIHigh; ++ascii)
