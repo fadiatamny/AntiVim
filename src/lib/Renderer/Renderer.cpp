@@ -3,15 +3,15 @@
 
 void Renderer::init(int windowWidth, int windowHeight, const char *title)
 {
-    SDLCheckCode(SDL_Init(SDL_INIT_VIDEO));
-    SDLCheckPtr(this->window = SDL_CreateWindow(
-                    title,
-                    SDL_WINDOWPOS_UNDEFINED,
-                    SDL_WINDOWPOS_UNDEFINED,
-                    windowWidth,
-                    windowHeight,
-                    SDL_WINDOW_SHOWN));
-    SDLCheckPtr(this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED));
+    SDLHelpers::SDLCheckCode(SDL_Init(SDL_INIT_VIDEO));
+    SDLHelpers::SDLCheckPtr(this->window = SDL_CreateWindow(
+                                title,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                windowWidth,
+                                windowHeight,
+                                SDL_WINDOW_SHOWN));
+    SDLHelpers::SDLCheckPtr(this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED));
     this->fontManager.loadTexture(this->renderer);
     this->running = true;
 }
@@ -20,13 +20,28 @@ void Renderer::run()
 {
     while (this->running)
     {
+        const Uint32 start = SDL_GetTicks();
+
         this->pollEvents();
         Uint32 color = 0xffffffff;
-        SDLCheckCode(SDL_RenderClear(renderer));
+
+        const float cameraAcceleration = 2.0f;
+        Vec2<float> cursorPos(FontManager::charWidth * this->fontManager.scale * this->buffer.cursor.x, FontManager::charHeight * this->fontManager.scale * this->buffer.cursor.y);
+        Vec2<float> camVel = (cursorPos - this->cameraPos) * cameraAcceleration;
+        this->cameraPos = this->cameraPos + (camVel * DELTA_TIME);
+
+        SDLHelpers::SDLCheckCode(SDL_RenderClear(renderer));
         this->renderBuffer(color, this->fontManager.scale);
         this->renderCursor(color);
-        SDLCheckCode(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
+        SDLHelpers::SDLCheckCode(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
         SDL_RenderPresent(renderer);
+
+        const Uint32 duration = SDL_GetTicks() - start;
+        const Uint32 delay = 1000 / FPS;
+        if (duration < delay)
+        {
+            SDL_Delay(delay - duration);
+        }
     }
 }
 
@@ -44,7 +59,9 @@ void Renderer::renderChar(const char c, Vec2<float> pos, float scale)
     if (FontManager::ASCIILow <= c && c <= FontManager::ASCIIHigh)
     {
         index = c - FontManager::ASCIILow;
-    } else if ( c == '\r' || c == '\n' ) {
+    }
+    else if (c == '\r' || c == '\n')
+    {
         return;
     }
 
@@ -54,7 +71,7 @@ void Renderer::renderChar(const char c, Vec2<float> pos, float scale)
         .w = (int)floorf(FontManager::charWidth * scale),
         .h = (int)floorf(FontManager::charHeight * scale)};
 
-    SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontManager.texture, &this->fontManager.glyphs[index], &dst));
+    SDLHelpers::SDLCheckCode(SDL_RenderCopy(this->renderer, this->fontManager.texture, &this->fontManager.glyphs[index], &dst));
 }
 
 void Renderer::renderTextChunk(const char *text, size_t len, Vec2<float> pos, Uint32 color, float scale)
@@ -70,8 +87,8 @@ void Renderer::renderTextChunk(const char *text, size_t len, Vec2<float> pos, Ui
 
 void Renderer::setTextureColor(Uint32 color)
 {
-    SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, UNHEX_RGB(color)));
-    SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, UNHEX_A(color)));
+    SDLHelpers::SDLCheckCode(SDL_SetTextureColorMod(this->fontManager.texture, UNHEX_RGB(color)));
+    SDLHelpers::SDLCheckCode(SDL_SetTextureAlphaMod(this->fontManager.texture, UNHEX_A(color)));
 }
 
 void Renderer::renderText(const char *text, Vec2<float> pos, Uint32 color, float scale)
@@ -81,32 +98,33 @@ void Renderer::renderText(const char *text, Vec2<float> pos, Uint32 color, float
 
 void Renderer::renderBuffer(Uint32 color, float scale)
 {
-    Vec2<float> pos{0, 0};
-
-    for(auto it=this->buffer.linesBegin(); it != this->buffer.linesEnd(); ++it)
+    size_t row = 0;
+    for (auto it = this->buffer.linesBegin(); it != this->buffer.linesEnd(); ++it)
     {
-        this->renderText((*it).c_str(), pos, color, scale);
-        pos.y += FontManager::charHeight * scale;
+        const Vec2<float> currPos = Vec2<float>(0.f, (float)row++ * FontManager::charHeight * scale);
+        const Vec2<float> linePos = SDLHelpers::ProjectPointToCamera(this->window, this->cameraPos, currPos);
+        this->renderText((*it).c_str(), linePos, color, scale);
     }
-
 }
 
 void Renderer::renderCursor(Uint32 color)
 {
     Vec2<float> pos(FontManager::charWidth * this->fontManager.scale * this->buffer.cursor.x, FontManager::charHeight * this->fontManager.scale * this->buffer.cursor.y);
+    Vec2<float> projected = SDLHelpers::ProjectPointToCamera(this->window, this->cameraPos, pos);
+
     SDL_Rect rect{
-        .x = (int)floorf(pos.x),
-        .y = (int)floorf(pos.y),
+        .x = (int)floorf(projected.x),
+        .y = (int)floorf(projected.y),
         .w = (int)floorf(FontManager::charWidth * this->fontManager.scale),
         .h = (int)floorf(FontManager::charHeight * this->fontManager.scale)};
 
-    SDLCheckCode(SDL_SetRenderDrawColor(this->renderer, UNHEX(color)));
-    SDLCheckCode(SDL_RenderFillRect(this->renderer, &rect));
+    SDLHelpers::SDLCheckCode(SDL_SetRenderDrawColor(this->renderer, UNHEX(color)));
+    SDLHelpers::SDLCheckCode(SDL_RenderFillRect(this->renderer, &rect));
 
-    if (this->buffer.currLine() && this->buffer.lineEnd() &&  this->buffer.cursor.x < this->buffer.lineEnd())
+    if (this->buffer.currLine() && this->buffer.lineEnd() && this->buffer.cursor.x < this->buffer.lineEnd())
     {
         this->setTextureColor(0xff000000);
-        this->renderChar(this->buffer.currLine()[(int)this->buffer.cursor.x], pos, this->fontManager.scale);
+        this->renderChar(this->buffer.currLine()[(int)this->buffer.cursor.x], projected, this->fontManager.scale);
     }
 }
 
